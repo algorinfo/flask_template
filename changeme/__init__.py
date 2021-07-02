@@ -46,7 +46,8 @@ def create_app(cfg: Optional[Config] = None):
     login_manager.login_view = "auth.login"
     login_manager.init_app(app)
 
-    metrics = GunicornPrometheusMetrics(app)
+    metrics = GunicornPrometheusMetrics.for_app_factory()
+    metrics.init_app(app)
     metrics.info("app_info", "Application info", version="1.0.3")
     # csrf.init_app(app)
 

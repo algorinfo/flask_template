@@ -6,7 +6,11 @@ Commands:
 	lock      Generate requirements.txt
 	test      Run tests
 	lint      Run linting tests
-	release   Build and publish docker image to registry.int.deskcrash.com
+	run       Run docker image with --rm flag but mounted dirs.
+	release   Publish docker image based on DOCKERID
+	docker    Build the docker image
+	tag    	  Make a git tab using poetry information
+
 endef
 
 export USAGE
@@ -15,6 +19,7 @@ VERSION := $(shell git describe --tags)
 BUILD := $(shell git rev-parse --short HEAD)
 PROJECTNAME := $(shell basename "$(PWD)")
 PACKAGE_DIR = $(shell basename "$(PWD)")
+DOCKERID = $(shell echo "nuxion")
 
 help:
 	@echo "$$USAGE"
@@ -51,21 +56,16 @@ setup:
 
 .PHONY: run
 run:
-	docker run --rm -p 127.0.0.1:8000:8000 --env-file=.env nuxion/${PROJECTNAME}
+	docker run --rm -p 127.0.0.1:8100:8000 -p 127.0.0.1:8110:8001 ${DOCKERID}/${PROJECTNAME}
 
 .PHONY: docker
 docker:
-	docker build -t nuxion/${PROJECTNAME} .
+	docker build -t ${DOCKERID}/${PROJECTNAME} .
 
 .PHONY: release
-release: lint docker 
-	docker tag nuxion/${PROJECTNAME} registry.int.deskcrash.com/nuxion/${PROJECTNAME}:$(VERSION)
-	docker push registry.int.deskcrash.com/nuxion/$(PROJECTNAME):$(VERSION)
-
-.PHONY: registry
-registry:
-	# curl http://registry.int.deskcrash.com/v2/_catalog | jq
-	curl http://registry.int.deskcrash.com/v2/nuxion/$(PROJECTNAME)/tags/list 
+release: 
+	docker tag ${DOCKERID}/${PROJECTNAME} ${DOCKERID}/${PROJECTNAME}:$(VERSION) 
+	docker push ${DOCKERID}/$(PROJECTNAME):$(VERSION)
 
 .PHONY: redis-cli
 redis-cli:
