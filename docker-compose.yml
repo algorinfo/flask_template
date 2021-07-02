@@ -1,0 +1,44 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres:11-alpine
+    # env_file: .env
+    #volumes:
+    #  - ./pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=changeme
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - 127.0.0.1:5432:5432
+    networks: 
+        - flaskapp
+  redis:
+    image: redis:6-alpine
+    ports:
+      -  127.0.0.1:6379:6379
+    networks:
+        - flaskapp
+  volume:
+    image: nginx
+    ports:
+      - 127.0.0.1:3005:3001
+    volumes:
+      - ./nginx-vol.conf:/etc/nginx/nginx.conf:ro
+      - ./data/volume:/usr/share/nginx/html
+    networks:
+        - flaskapp
+  adminer:
+    image: adminer
+    ports:
+      - 127.0.0.1:9081:8080
+    networks:
+      - flaskapp
+
+networks:
+    flaskapp:
+
+# volumes:
+  # files-data:
+    #- source: ./files
